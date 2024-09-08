@@ -1,92 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>HLS Demo</title>
-  <link rel="stylesheet" href="https://cdn.plyr.io/1.8.2/plyr.css">
-  <style>
-    body {
-      max-width: 1030px;
-    }
-    .buffering {
-      display: none;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      font-size: 1px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 1px 2px;
-      border-radius: 1px;
-    }
-    .buffering.active {
-      display: block;
-    }
-    .video-wrapper {
-      position: relative;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talha's Player</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        #player {
+            position: absolute;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #000;
+        }
+        .jw-icon-rewind,
+        .jw-icon-forward {
+            filter: brightness(0) invert(1); /* Make icons white */
+        }
+        .jw-text-live {
+            color: red;
+        }
+        .jw-button-container {
+            display: flex;
+            justify-content: center; /* Center buttons horizontally */
+            gap: 10px; /* Adjust the gap between buttons */
+        }
+        .jw-icon-fullscreen,
+        .jw-icon-share,
+        .jw-icon-pip {
+            margin: 0 5px; /* Adjust margin as needed */
+        }
+    </style>
 </head>
 <body>
-  <div class="video-wrapper">
-    <div class="buffering" id="bufferingIndicator">ℙ𝕝𝕖𝕒𝕤𝕖 𝔹𝕖 ℙ𝕒𝕥𝕚𝕖𝕟𝕥, 𝕋𝕒𝕝𝕙𝕒'𝕤 ℙ𝕝𝕒𝕪𝕖𝕣 𝕎𝕚𝕝𝕝 ℙ𝕝𝕒𝕪 𝕋𝕙𝕖 𝕍𝕚𝕕𝕖𝕠 𝕀𝕟 𝔸 𝕎𝕙𝕚𝕝𝕖. ℕ𝕠𝕨 𝕍𝕚𝕕𝕖𝕠 𝕀𝕤 𝔹𝕦𝕗𝕗𝕖𝕣𝕚𝕟𝕘.</div>
-    <video preload="none" id="player" autoplay controls crossorigin poster="https://s10.gifyu.com/images/SYGkR.jpg" position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width:100%;"></video>
-  </div>
-  <script src="https://cdn.plyr.io/1.8.2/plyr.js"></script>
-  <script src="https://cdn.jsdelivr.net/hls.js/latest/hls.js"></script>
-  <script>
-    (function () {
-      var video = document.querySelector('#player');
-      var bufferingIndicator = document.getElementById('bufferingIndicator');
+    <div id="player"></div>
 
-      if (Hls.isSupported()) {
-        var hls = new Hls();
-        hls.loadSource('https://cdn.footballii.ir/hls2/bein1.m3u8');
-        hls.attachMedia(video);
+    <script>
+        jwplayer.key = 'EP3tanOyfjurKgiA7KLnzMTekvDl1Wr14XmAOqNBk3eDc3Yyao+866DfCQaHUofh';
 
-        hls.on(Hls.Events.MANIFEST_PARSED, function() {
-          var availableLevels = hls.levels;
-          var targetResolution = 720;
-          var targetIndex = availableLevels.findIndex(level => level.height === targetResolution);
+        function setupPlayer(videoUrls, drmOptions = null, posterUrl = null) {
+            const playlistItems = videoUrls.map((url, index) => {
+                return {
+                    title: "Arena Sports Premium 2",
+                    description: "Talha's Stream",
+                    image: "https://s11.gifyu.com/images/S1l3T.jpg",
+                    sources: [
+                        {
+                            file: url,
+                            type: determineSourceType(url),
+                            label: "1080p",
+                            default: true
+                        }
+                    ],
+                    drm: drmOptions ? {
+                        clearkey: {
+                            keyId: drmOptions.keyId,
+                            key: drmOptions.key
+                        }
+                    } : null
+                };
+            });
 
-          // If 720p is not found, use the highest resolution below 720p
-          if (targetIndex === -1) {
-            targetIndex = availableLevels.reduce((prev, curr, index) => {
-              return (curr.height < targetResolution && curr.height > availableLevels[prev].height) ? index : prev;
-            }, 0);
-          }
+            jwplayer("player").setup({
+                controls: true,
+                sharing: true,
+                displaytitle: true,
+                autoplay: true,
+                displaydescription: true,
+                abouttext: "Video Player By Talha's Stream",
+                aboutlink: "https://t.me/talhasmovie_request_bot",
+                skin: {
+                    name: "netflix"
+                },
+                captions: {
+                    color: "#FFF",
+                    fontSize: 14,
+                    backgroundOpacity: 0,
+                    edgeStyle: "raised"
+                },
+                playlist: playlistItems,
+                advertising: {
+                    client: "vast",
+                    schedule: [
+                        {
+                            offset: "pre",
+                            tag: ""
+                        }
+                    ]
+                },
+                image: posterUrl
+            }).on("ready", function () {
+                const playerContainer = jwplayer().getContainer();
+                const buttonContainer = playerContainer.querySelector(".jw-button-container");
+                const spacer = buttonContainer.querySelector(".jw-spacer");
+                const timeSlider = playerContainer.querySelector(".jw-slider-time");
+                buttonContainer.replaceChild(timeSlider, spacer);
 
-          hls.loadLevel = targetIndex;
-          hls.currentLevel = targetIndex;
+                const rewindContainer = playerContainer.querySelector(".jw-display-icon-rewind");
+                const forwardContainer = rewindContainer.cloneNode(true);
+                const forwardDisplayButton = forwardContainer.querySelector(".jw-icon-rewind");
+                forwardDisplayButton.style.transform = "scaleX(-1)";
+                forwardDisplayButton.ariaLabel = "Forward 10 Seconds";
+                const nextContainer = playerContainer.querySelector(".jw-display-icon-next");
+                nextContainer.parentNode.insertBefore(forwardContainer, nextContainer);
 
-          video.play();
-        });
+                playerContainer.querySelector(".jw-display-icon-next").style.display = "none";
+                const rewindControlBarButton = buttonContainer.querySelector(".jw-icon-rewind");
+                const forwardControlBarButton = rewindControlBarButton.cloneNode(true);
+                forwardControlBarButton.style.transform = "scaleX(-1)";
+                forwardControlBarButton.ariaLabel = "Forward 10 Seconds";
+                rewindControlBarButton.parentNode.insertBefore(forwardControlBarButton, rewindControlBarButton.nextElementSibling);
 
-        // Show buffering indicator on waiting event
-        video.addEventListener('waiting', function() {
-          bufferingIndicator.classList.add('active');
-        });
+                [forwardDisplayButton, forwardControlBarButton].forEach((button) => {
+                    button.onclick = () => {
+                        jwplayer().seek(jwplayer().getPosition() + 10);
+                    };
+                });
+            });
+        }
 
-        // Hide buffering indicator on playing event
-        video.addEventListener('playing', function() {
-          bufferingIndicator.classList.remove('active');
-        });
+        function determineSourceType(url) {
+            if (url.endsWith(".mkv") || url.endsWith(".mp4")) {
+                return "mp4";
+            } else if (url.endsWith(".m3u8")) {
+                return "hls";
+            } else if (url.endsWith(".mpd")) {
+                return "dash";
+            }
+            return "mp4"; // Default to MP4
+        }
 
-        // Hide buffering indicator on pause event
-        video.addEventListener('pause', function() {
-          bufferingIndicator.classList.remove('active');
-        });
-
-        // Hide buffering indicator on ended event
-        video.addEventListener('ended', function() {
-          bufferingIndicator.classList.remove('active');
-        });
-      }
-
-      plyr.setup(video);
-    })();
-  </script>
+        setupPlayer(
+            [
+                "https://webtvstream.bhtelecom.ba/hls6/as_premium2.mpd"
+            ],
+            {
+                keyId: "c18b6aa739be4c0b774605fcfb5d6b68",
+                key: "e41c3a6f7532b2e3a828d9580124c89d"
+            },
+            ""
+        );
+    </script>
 </body>
 </html>
